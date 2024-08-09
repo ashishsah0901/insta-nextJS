@@ -13,6 +13,8 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const { HttpClient } = require('@actions/http-client');
+
             const issue = context.payload.issue;
             const event = context.eventName;
             const webhookUrl = process.env.SLACK_WEBHOOK_URL;
@@ -23,14 +25,17 @@ jobs:
               username: 'GitHub Issues Bot',
             };
 
-            const fetch = require('node-fetch');
-            fetch(webhookUrl, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(message),
-            })
-            .then(response => response.json())
-            .then(data => console.log('Success:', data))
-            .catch(error => console.error('Error:', error));
+            const http = new HttpClient();
+            http.post(webhookUrl, JSON.stringify(message), {
+              headers: { 'Content-Type': 'application/json' }
+            }).then(response => {
+              if (response.message.statusCode === 200) {
+                console.log('Notification sent successfully');
+              } else {
+                console.error('Failed to send notification');
+              }
+            }).catch(error => {
+              console.error('Error:', error);
+            });
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
