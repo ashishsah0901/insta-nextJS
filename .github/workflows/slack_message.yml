@@ -19,7 +19,7 @@ jobs:
 
             const issue = context.payload.issue;
             const event = context.eventName;
-            const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+            const webhookUrl = "https://hooks.slack.com/services/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";
 
             const message = {
               text: `Issue ${event}: *${issue.title}* - ${issue.html_url}`,
