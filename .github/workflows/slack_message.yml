@@ -1,0 +1,36 @@
+name: Notify Slack on Issue Events
+
+on:
+  issues:
+    types: [opened, edited, closed]
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Send notification to Slack
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const issue = context.payload.issue;
+            const event = context.eventName;
+            const webhookUrl = process.env.SLACK_WEBHOOK_URL;
+
+            const message = {
+              text: `Issue ${event}: *${issue.title}* - ${issue.html_url}`,
+              channel: '#your-channel', // Replace with your channel name
+              username: 'GitHub Issues Bot',
+            };
+
+            const fetch = require('node-fetch');
+            fetch(webhookUrl, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(message),
+            })
+            .then(response => response.json())
+            .then(data => console.log('Success:', data))
+            .catch(error => console.error('Error:', error));
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
